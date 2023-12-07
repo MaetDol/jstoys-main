@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const FilmContainer = styled.div`
+const FilmContainer = styled.div<{ isDragging: boolean }>`
   width: 424px;
   height: 356px;
   background: white;
@@ -10,6 +10,9 @@ const FilmContainer = styled.div`
   box-sizing: border-box;
   position: absolute;
   cursor: grab;
+
+  transition: transform ease-in-out 0.1s;
+  transform: scale(${(props) => (props.isDragging ? 1.05 : 1)});
 `;
 
 const ImageWrapper = styled.div`
@@ -30,35 +33,42 @@ export const Film: React.FC = () => {
     x: 0,
     y: 0,
   });
-  const isDragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const mouseUp = () => {
     setPosition((prev) => ({ ...prev, prev: undefined }));
-    isDragging.current = false;
+    setIsDragging(false);
   };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!isDragging.current) return;
+      // 이부분 개선 필요..
+      // setter 를 이용하기 위해 다른 상태에 접근해야 하는데,
+      // handler 의 재 설정을 피하기 위해 setter 속 setter 를 이용 중..
+      setIsDragging((isDragging) => {
+        if (!isDragging) return isDragging;
 
-      setPosition((state) => {
-        let newPosition = state;
+        setPosition((state) => {
+          let newPosition = state;
 
-        if (state.prev) {
-          newPosition = {
-            x: state.x + e.clientX - state.prev.x,
-            y: state.y + e.clientY - state.prev.y,
+          if (state.prev) {
+            newPosition = {
+              x: state.x + e.clientX - state.prev.x,
+              y: state.y + e.clientY - state.prev.y,
+            };
+            console.log(newPosition.x);
+          }
+
+          return {
+            ...newPosition,
+            prev: {
+              x: e.clientX,
+              y: e.clientY,
+            },
           };
-          console.log(newPosition.x);
-        }
+        });
 
-        return {
-          ...newPosition,
-          prev: {
-            x: e.clientX,
-            y: e.clientY,
-          },
-        };
+        return isDragging;
       });
     };
 
@@ -73,8 +83,9 @@ export const Film: React.FC = () => {
 
   return (
     <FilmContainer
+      isDragging={isDragging}
       draggable={false}
-      onMouseDown={() => (isDragging.current = true)}
+      onMouseDown={() => setIsDragging(true)}
       onMouseUp={mouseUp}
       style={{
         left: position.x,
