@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import './App.css';
 import { Film } from './components';
 import logo from './logo.svg';
+import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
 
 const Background = styled.div`
@@ -23,6 +24,26 @@ const Background = styled.div`
   }
 `;
 
+const GithubIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-right: 4px;
+`;
+
+const GithubLink = styled.a`
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 10;
+
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #222;
+`;
+
 function App() {
   return (
     <div className="App">
@@ -41,6 +62,14 @@ function App() {
         >
           Learn React
         </a>
+        <GithubLink
+          title="JSToys-main 레포지토리 새창에서 열기"
+          href="https://github.com/MaetDol/jstoys-main"
+          target="_blank"
+        >
+          <GithubIcon src={GITHUB_ICON} />
+          MaetDol
+        </GithubLink>
       </header>
     </div>
   );
