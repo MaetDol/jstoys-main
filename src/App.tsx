@@ -77,6 +77,8 @@ const Vignetting = styled.div`
 `;
 
 function App() {
+  // Vignetting 컴포넌트 분리시 같이 가져갈 것.
+  // 커스텀 훅으로 분리
   const [windowDiagonal, setWindowDiagonal] = useState(0);
   const [windowCenter, setWindowCenter] = useState([0, 0]);
 
