@@ -7,6 +7,7 @@ const FilmContainer = styled.div`
   box-shadow: 0 0 12px 4px rgba(0, 0, 0, 8%);
   padding: 28px 68px 28px 28px;
   box-sizing: border-box;
+  position: relative;
 `;
 
 const ImageWrapper = styled.div`

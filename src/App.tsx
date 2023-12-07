@@ -1,10 +1,15 @@
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
-import './App.css';
 import { Film } from './components';
-import logo from './logo.svg';
 import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
+
+const AppContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+`;
 
 const Background = styled.div`
   pointer-events: none;
@@ -86,39 +91,25 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
+    <AppContainer>
       <Background />
-      <header className="App-header">
-        <Vignetting
-          style={{
-            width: `${windowDiagonal}px`,
-            left: `${windowCenter[0]}px`,
-            top: `${windowCenter[1]}px`,
-          }}
-        />
-        <Film />
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <GithubLink
-          title="JSToys-main 레포지토리 새창에서 열기"
-          href="https://github.com/MaetDol/jstoys-main"
-          target="_blank"
-        >
-          <GithubIcon src={GITHUB_ICON} />
-          MaetDol
-        </GithubLink>
-      </header>
-    </div>
+      <Vignetting
+        style={{
+          width: `${windowDiagonal}px`,
+          left: `${windowCenter[0]}px`,
+          top: `${windowCenter[1]}px`,
+        }}
+      />
+      <Film />
+      <GithubLink
+        title="JSToys-main 레포지토리 새창에서 열기"
+        href="https://github.com/MaetDol/jstoys-main"
+        target="_blank"
+      >
+        <GithubIcon src={GITHUB_ICON} />
+        MaetDol
+      </GithubLink>
+    </AppContainer>
   );
 }
 
