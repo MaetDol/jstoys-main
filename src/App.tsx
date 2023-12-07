@@ -1,8 +1,15 @@
+import { Global, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { Film } from './components';
 import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
+
+const resetStyle = css`
+  body {
+    margin: 0;
+  }
+`;
 
 const AppContainer = styled.div`
   width: 100vw;
@@ -92,6 +99,7 @@ function App() {
 
   return (
     <AppContainer>
+      <Global styles={resetStyle} />
       <Background />
       <Vignetting
         style={{
