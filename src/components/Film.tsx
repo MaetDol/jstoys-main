@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 const FilmContainer = styled.div<{ isDragging: boolean }>`
   width: 424px;
@@ -28,16 +28,16 @@ type Position = {
   prev?: Omit<Position, 'prev'>;
 };
 
-export const Film: React.FC = () => {
-  const [position, setPosition] = useState<Position>({
-    x: 0,
-    y: 0,
-  });
-  const [isDragging, setIsDragging] = useState(false);
+export const Film = forwardRef((_, ref) => {
+  const prev = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = useRef(false);
+
+  const divRef = useRef<HTMLDivElement>(null);
+  useImperativeHandle(ref, () => divRef.current);
 
   const mouseUp = () => {
-    setPosition((prev) => ({ ...prev, prev: undefined }));
-    setIsDragging(false);
+    prev.current = null;
+    isDragging.current = false;
   };
 
   useEffect(() => {
@@ -45,31 +45,18 @@ export const Film: React.FC = () => {
       // 이부분 개선 필요..
       // setter 를 이용하기 위해 다른 상태에 접근해야 하는데,
       // handler 의 재 설정을 피하기 위해 setter 속 setter 를 이용 중..
-      setIsDragging((isDragging) => {
-        if (!isDragging) return isDragging;
+      if (!isDragging.current) return;
 
-        setPosition((state) => {
-          let newPosition = state;
+      if (prev.current && divRef.current) {
+        const { x, y } = divRef.current.getBoundingClientRect();
+        divRef.current.style.left = x + e.clientX - prev.current.x + 'px';
+        divRef.current.style.top = y + e.clientY - prev.current.y + 'px';
+      }
 
-          if (state.prev) {
-            newPosition = {
-              x: state.x + e.clientX - state.prev.x,
-              y: state.y + e.clientY - state.prev.y,
-            };
-            console.log(newPosition.x);
-          }
-
-          return {
-            ...newPosition,
-            prev: {
-              x: e.clientX,
-              y: e.clientY,
-            },
-          };
-        });
-
-        return isDragging;
-      });
+      prev.current = {
+        x: e.clientX,
+        y: e.clientY,
+      };
     };
 
     window.addEventListener('mousemove', handler);
@@ -83,16 +70,13 @@ export const Film: React.FC = () => {
 
   return (
     <FilmContainer
-      isDragging={isDragging}
+      ref={divRef}
+      isDragging={isDragging.current}
       draggable={false}
-      onMouseDown={() => setIsDragging(true)}
+      onMouseDown={() => (isDragging.current = true)}
       onMouseUp={mouseUp}
-      style={{
-        left: position.x,
-        top: position.y,
-      }}
     >
       <ImageWrapper />
     </FilmContainer>
   );
-};
+});
