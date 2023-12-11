@@ -1,7 +1,7 @@
 import { Global, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
-import { Film } from './components';
+import { FilmPhysics } from './components/FilmPhysics';
 import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
 
@@ -110,7 +110,7 @@ function App() {
           top: `${windowCenter[1]}px`,
         }}
       />
-      <Film />
+      <FilmPhysics></FilmPhysics>
       <GithubLink
         title="JSToys-main 레포지토리 새창에서 열기"
         href="https://github.com/MaetDol/jstoys-main"
