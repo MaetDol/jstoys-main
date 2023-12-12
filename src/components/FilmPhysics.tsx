@@ -1,69 +1,77 @@
 import { useEffect, useRef } from 'react';
 import { Film } from './Film';
 
-export const FilmPhysics: React.FC = () => {
-  // 여기서 모든 필름들 위치를 확인하고,
-  // 충돌 계산 등 물리법칙 적용을 처리하고자 함
-  const ref1 = useRef<HTMLDivElement>(null);
-  const ref2 = useRef<HTMLDivElement>(null);
+type FilmRef = {
+  id: number;
+  elem: HTMLDivElement | null;
+  position: Position;
+  acceleration: Position;
+  zIndex: number;
+  isDragging?: boolean;
+};
 
-  const vec2 = useRef({ x: 0, y: 0 });
+type Position = {
+  x: number;
+  y: number;
+};
+
+export const FilmPhysics: React.FC = () => {
+  const zIndex = useRef(1);
+  const filmes = useRef<FilmRef[]>([
+    {
+      id: 0,
+      elem: null,
+      position: { x: 0, y: 0 },
+      acceleration: { x: 0, y: 0 },
+      zIndex: 0,
+    },
+    {
+      id: 1,
+      elem: null,
+      position: { x: 0, y: 0 },
+      acceleration: { x: 0, y: 0 },
+      zIndex: 1,
+    },
+  ]);
 
   useEffect(() => {
     let stopAnimating = false;
-    const collision = () => {
+    const physics = () => {
       if (stopAnimating) return;
 
-      if (ref1.current && ref2.current) {
-        const f1 = ref1.current.getBoundingClientRect();
-        const f2 = ref2.current.getBoundingClientRect();
-        const hasConfilct = hasRectConflict(f1, f2);
-        if (hasConfilct) {
-          const f1Center = {
-            x: f1.x + f1.width / 2,
-            y: f1.y + f1.height / 2,
-          };
-          const f2Center = {
-            x: f2.x + f2.width / 2,
-            y: f2.y + f2.height / 2,
-          };
-          const xDis = f2Center.x - f1Center.x;
-          const yDis = f2Center.y - f1Center.y;
+      filmes.current.forEach((film1) => {
+        if (!film1.elem) return;
+        film1.elem.style.zIndex = film1.zIndex.toString();
+        if (!film1.isDragging) {
+          filmes.current.forEach((film2) => {
+            if (film1 === film2) return;
+            if (!film1.elem) return;
+            if (!film2.elem) return;
 
-          const targetXDistance = f1.width / 2 + f2.width / 2;
-          const targetYDistance = f1.height / 2 + f2.height / 2;
+            const rect1 = film1.elem.getBoundingClientRect();
+            if (film2.zIndex < film1.zIndex) {
+              const rect2 = film2.elem.getBoundingClientRect();
+              if (hasRectConflict(rect1, rect2)) {
+                accumulateAccel(film1, rect1, rect2);
+              }
+            }
 
-          const xOverlap = targetXDistance - Math.abs(xDis);
-          const yOverlap = targetYDistance - Math.abs(yDis);
+            film1.acceleration.x *= 0.97;
+            film1.acceleration.y *= 0.97;
+          });
 
-          const w = xOverlap * yOverlap * 0.000001;
-          console.log(w);
-          if (w > 0.05) {
-            const slope = Math.max(
-              0.2,
-              Math.min(2, Math.abs((f1.y - f2.y) / (f1.x - f2.x)))
-            );
-            const targetY = slope * w;
-            const targetX = w / slope;
-
-            if (!isFinite(vec2.current.x)) vec2.current.x = 0;
-            if (!isFinite(vec2.current.y)) vec2.current.y = 0;
-            vec2.current.x += Math.sign(xDis) * Math.abs(targetX);
-            vec2.current.y += Math.sign(yDis) * Math.abs(targetY);
-          }
+          film1.position.x += film1.acceleration.x;
+          film1.position.y += film1.acceleration.y;
         }
 
-        ref2.current.style.left = f2.x + vec2.current.x + 'px';
-        ref2.current.style.top = f2.y + vec2.current.y + 'px';
+        film1.elem.style.left = film1.position.x + 'px';
+        film1.elem.style.top = film1.position.y + 'px';
+      });
 
-        vec2.current.x *= 0.97;
-        vec2.current.y *= 0.97;
-      }
-      requestAnimationFrame(collision);
+      requestAnimationFrame(physics);
     };
 
-    if (!stopAnimating) requestAnimationFrame(collision);
-
+    if (!stopAnimating) requestAnimationFrame(physics);
     return () => {
       stopAnimating = true;
     };
@@ -71,11 +79,82 @@ export const FilmPhysics: React.FC = () => {
 
   return (
     <div>
-      <Film ref={ref1} />
-      <Film ref={ref2} />
+      {filmes.current.map((film) => (
+        <Film
+          key={film.id}
+          ref={(elem) => (film.elem = elem)}
+          onDragStart={() => {
+            filmes.current.forEach((film2) => {
+              if (film === film2) return;
+              if (!film.elem) return;
+              if (!film2.elem) return;
+              if (film2.zIndex < film.zIndex) return;
+
+              const rect1 = film.elem.getBoundingClientRect();
+              const rect2 = film2.elem.getBoundingClientRect();
+              if (!hasRectConflict(rect1, rect2)) return;
+
+              film2.acceleration.x = 0;
+              film2.acceleration.y = 0;
+              accumulateAccel(film2, rect2, rect1, 0);
+              film2.acceleration.x *= 60;
+              film2.acceleration.y *= 60;
+            });
+            film.zIndex = ++zIndex.current;
+            film.isDragging = true;
+            film.acceleration.x = 0;
+            film.acceleration.y = 0;
+          }}
+          onDragStop={() => (film.isDragging = false)}
+          onDragging={(x, y) => {
+            film.position.x += x;
+            film.position.y += y;
+          }}
+        />
+      ))}
     </div>
   );
 };
+
+function accumulateAccel(
+  film: FilmRef,
+  rect1: DOMRect,
+  rect2: DOMRect,
+  throttle = 0.05
+) {
+  const rect1Center = {
+    x: rect1.x + rect1.width / 2,
+    y: rect1.y + rect1.height / 2,
+  };
+  const rect2Center = {
+    x: rect2.x + rect2.width / 2,
+    y: rect2.y + rect2.height / 2,
+  };
+
+  const xDis = rect1Center.x - rect2Center.x;
+  const yDis = rect1Center.y - rect2Center.y;
+
+  const targetXDistance = rect2.width / 2 + rect1.width / 2;
+  const targetYDistance = rect2.height / 2 + rect1.height / 2;
+
+  const xOverlap = targetXDistance - Math.abs(xDis);
+  const yOverlap = targetYDistance - Math.abs(yDis);
+
+  const w = xOverlap * yOverlap * 0.0000005;
+  if (w > throttle) {
+    const slope = Math.max(
+      0.2,
+      Math.min(2, Math.abs((rect2.y - rect1.y) / (rect2.x - rect1.x)))
+    );
+    let targetY = slope * w;
+    let targetX = w / slope;
+
+    if (!isFinite(targetX)) targetX = 0;
+    if (!isFinite(targetY)) targetY = 0;
+    film.acceleration.x += Math.sign(xDis) * Math.abs(targetX);
+    film.acceleration.y += Math.sign(yDis) * Math.abs(targetY);
+  }
+}
 
 function hasRectConflict(f1: DOMRect, f2: DOMRect) {
   const checkF1 =
