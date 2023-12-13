@@ -57,10 +57,11 @@ const FilmElement = styled.div<{ isDragging: boolean; isFocusing: boolean }>`
   }}
 `;
 
-const ImageWrapper = styled.div`
+const ImageWrapper = styled.img`
   width: 100%;
   height: 100%;
   background: lightgray;
+  object-fit: cover;
 `;
 
 type Props = {
@@ -71,11 +72,21 @@ type Props = {
 
   isFocusing: boolean;
   onDimClick?: () => void;
+
+  imgUrl: string;
 };
 
 export const Film = forwardRef<HTMLDivElement, Props>(
   (
-    { onDragStart, onDragStop, onDragging, onClick, isFocusing, onDimClick },
+    {
+      onDragStart,
+      onDragStop,
+      onDragging,
+      onClick,
+      isFocusing,
+      onDimClick,
+      imgUrl,
+    },
     ref
   ) => {
     const prev = useRef<{ x: number; y: number; distance: number } | null>(
@@ -143,7 +154,7 @@ export const Film = forwardRef<HTMLDivElement, Props>(
           onMouseDown={mouseDown}
           onMouseUp={mouseUp}
         >
-          <ImageWrapper />
+          <ImageWrapper draggable={false} src={imgUrl} />
         </FilmElement>
         {isFocusing && <Dim onClick={() => onDimClick?.()} />}
       </Container>

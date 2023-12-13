@@ -107,6 +107,7 @@ export const FilmPhysics: React.FC = () => {
             key={film.id}
             ref={(elem) => (film.elem = elem)}
             isFocusing={film.id === focusedId}
+            imgUrl={film.content.imgUrl}
             onDragStart={() => {
               filmes.current.forEach((film2) => {
                 if (film === film2) return;
