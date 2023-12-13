@@ -64,13 +64,19 @@ export const FilmPhysics: React.FC = () => {
           film1.elem.parentElement.style.zIndex = film1.zIndex.toString();
         }
 
+        const rect1 = film1.elem.getBoundingClientRect();
+        const boundary = {
+          left: -rect1.width * 0.2,
+          top: -rect1.height * 0.2,
+          bottom: window.innerHeight - rect1.height * 0.8,
+          right: window.innerWidth - rect1.width * 0.8,
+        };
         if (!film1.isDragging) {
           filmes.current.forEach((film2) => {
             if (film1 === film2) return;
             if (!film1.elem) return;
             if (!film2.elem) return;
 
-            const rect1 = film1.elem.getBoundingClientRect();
             if (film2.zIndex < film1.zIndex) {
               const rect2 = film2.elem.getBoundingClientRect();
               if (hasRectConflict(rect1, rect2)) {
@@ -83,7 +89,18 @@ export const FilmPhysics: React.FC = () => {
           });
 
           film1.position.x += film1.acceleration.x;
+          if (film1.position.x < boundary.left) {
+            film1.position.x = boundary.left;
+          } else if (film1.position.x > boundary.right) {
+            film1.position.x = boundary.right;
+          }
+
           film1.position.y += film1.acceleration.y;
+          if (film1.position.y < boundary.top) {
+            film1.position.y = boundary.top;
+          } else if (film1.position.y > boundary.bottom) {
+            film1.position.y = boundary.bottom;
+          }
         }
 
         film1.elem.style.left = film1.position.x + 'px';
