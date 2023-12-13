@@ -78,8 +78,8 @@ export const FilmPhysics: React.FC = () => {
               }
             }
 
-            film1.acceleration.x *= 0.97;
-            film1.acceleration.y *= 0.97;
+            film1.acceleration.x *= 0.98;
+            film1.acceleration.y *= 0.98;
           });
 
           film1.position.x += film1.acceleration.x;
@@ -154,7 +154,7 @@ function accumulateAccel(
   film: FilmRef,
   rect1: DOMRect,
   rect2: DOMRect,
-  throttle = 0.05
+  throttle = 0.04
 ) {
   const rect1Center = {
     x: rect1.x + rect1.width / 2,
@@ -174,7 +174,7 @@ function accumulateAccel(
   const xOverlap = targetXDistance - Math.abs(xDis);
   const yOverlap = targetYDistance - Math.abs(yDis);
 
-  const w = xOverlap * yOverlap * 0.0000005;
+  const w = xOverlap * yOverlap * 0.000001;
   if (w > throttle) {
     const slope = Math.max(
       0.2,
