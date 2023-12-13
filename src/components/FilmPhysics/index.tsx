@@ -5,7 +5,7 @@ import { Sidebar } from '../Sidebar';
 import { FILM_CONTENTS, FilmContent } from './content';
 
 type FilmRef = {
-  id: number;
+  id: string;
   elem: HTMLDivElement | null;
   position: Position;
   acceleration: Position;
@@ -34,8 +34,8 @@ export const FilmPhysics: React.FC = () => {
   const filmes = useRef<FilmRef[]>([]);
   const [, setReady] = useState(false);
   useEffect(() => {
-    filmes.current = FILM_CONTENTS.map((film) => ({
-      id: 0,
+    filmes.current = FILM_CONTENTS.map((film, i) => ({
+      id: film.title + i,
       elem: null,
       position: {
         x: window.innerWidth / 2 - Math.random() * 424,
@@ -49,7 +49,7 @@ export const FilmPhysics: React.FC = () => {
     setReady(true);
   }, []);
 
-  const [focusedId, setFocusedId] = useState<number | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
   useEffect(() => {
     let stopAnimating = false;
