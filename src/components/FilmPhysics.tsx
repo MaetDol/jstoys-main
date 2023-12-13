@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import styled from '@emotion/styled';
+import { useEffect, useRef, useState } from 'react';
 import { Film } from './Film';
+import { Sidebar } from './Sidebar';
 
 type FilmRef = {
   id: number;
@@ -7,13 +9,22 @@ type FilmRef = {
   position: Position;
   acceleration: Position;
   zIndex: number;
-  isDragging?: boolean;
+  isDragging: boolean;
 };
 
 type Position = {
   x: number;
   y: number;
 };
+
+const ZIndexContainer = styled.div`
+  z-index: 1;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+`;
 
 export const FilmPhysics: React.FC = () => {
   const zIndex = useRef(1);
@@ -24,6 +35,7 @@ export const FilmPhysics: React.FC = () => {
       position: { x: 0, y: 0 },
       acceleration: { x: 0, y: 0 },
       zIndex: 0,
+      isDragging: false,
     },
     {
       id: 1,
@@ -31,8 +43,11 @@ export const FilmPhysics: React.FC = () => {
       position: { x: 0, y: 0 },
       acceleration: { x: 0, y: 0 },
       zIndex: 1,
+      isDragging: false,
     },
   ]);
+
+  const [focusedId, setFocusedId] = useState<number | null>(null);
 
   useEffect(() => {
     let stopAnimating = false;
@@ -40,8 +55,13 @@ export const FilmPhysics: React.FC = () => {
       if (stopAnimating) return;
 
       filmes.current.forEach((film1) => {
+        if (film1.id === focusedId) return;
         if (!film1.elem) return;
-        film1.elem.style.zIndex = film1.zIndex.toString();
+
+        if (film1.elem.parentElement) {
+          film1.elem.parentElement.style.zIndex = film1.zIndex.toString();
+        }
+
         if (!film1.isDragging) {
           filmes.current.forEach((film2) => {
             if (film1 === film2) return;
@@ -75,44 +95,55 @@ export const FilmPhysics: React.FC = () => {
     return () => {
       stopAnimating = true;
     };
-  }, []);
+  }, [focusedId]);
 
   return (
-    <div>
-      {filmes.current.map((film) => (
-        <Film
-          key={film.id}
-          ref={(elem) => (film.elem = elem)}
-          onDragStart={() => {
-            filmes.current.forEach((film2) => {
-              if (film === film2) return;
-              if (!film.elem) return;
-              if (!film2.elem) return;
-              if (film2.zIndex < film.zIndex) return;
+    <>
+      <ZIndexContainer>
+        {filmes.current.map((film) => (
+          <Film
+            key={film.id}
+            ref={(elem) => (film.elem = elem)}
+            isFocusing={film.id === focusedId}
+            onDragStart={() => {
+              filmes.current.forEach((film2) => {
+                if (film === film2) return;
+                if (!film.elem) return;
+                if (!film2.elem) return;
+                if (film2.zIndex < film.zIndex) return;
 
-              const rect1 = film.elem.getBoundingClientRect();
-              const rect2 = film2.elem.getBoundingClientRect();
-              if (!hasRectConflict(rect1, rect2)) return;
+                const rect1 = film.elem.getBoundingClientRect();
+                const rect2 = film2.elem.getBoundingClientRect();
+                if (!hasRectConflict(rect1, rect2)) return;
 
-              film2.acceleration.x = 0;
-              film2.acceleration.y = 0;
-              accumulateAccel(film2, rect2, rect1, 0);
-              film2.acceleration.x *= 60;
-              film2.acceleration.y *= 60;
-            });
-            film.zIndex = ++zIndex.current;
-            film.isDragging = true;
-            film.acceleration.x = 0;
-            film.acceleration.y = 0;
-          }}
-          onDragStop={() => (film.isDragging = false)}
-          onDragging={(x, y) => {
-            film.position.x += x;
-            film.position.y += y;
-          }}
-        />
-      ))}
-    </div>
+                film2.acceleration.x = 0;
+                film2.acceleration.y = 0;
+                accumulateAccel(film2, rect2, rect1, 0);
+                film2.acceleration.x *= 60;
+                film2.acceleration.y *= 60;
+              });
+              film.zIndex = ++zIndex.current;
+              film.isDragging = true;
+              film.acceleration.x = 0;
+              film.acceleration.y = 0;
+            }}
+            onDragStop={() => (film.isDragging = false)}
+            onDragging={(x, y) => {
+              if (film.id === focusedId) return;
+              film.position.x += x;
+              film.position.y += y;
+            }}
+            onClick={() => {
+              film.acceleration.x = 0;
+              film.acceleration.y = 0;
+              setFocusedId((id) => (id === film.id ? null : film.id));
+            }}
+            onDimClick={() => setFocusedId(null)}
+          />
+        ))}
+      </ZIndexContainer>
+      <Sidebar visible={focusedId !== null} />
+    </>
   );
 };
 
