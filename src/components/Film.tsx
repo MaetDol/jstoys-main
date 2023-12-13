@@ -57,11 +57,27 @@ const FilmElement = styled.div<{ isDragging: boolean; isFocusing: boolean }>`
   }}
 `;
 
-const ImageWrapper = styled.img`
+const ImageWrapper = styled.div`
   width: 100%;
   height: 100%;
   background: lightgray;
+  position: relative;
+`;
+
+const InsetShadow = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 2px 16px rgba(0, 0, 0, 0.05) inset;
+`;
+
+const Image = styled.img`
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  user-select: none;
 `;
 
 type Props = {
@@ -154,7 +170,10 @@ export const Film = forwardRef<HTMLDivElement, Props>(
           onMouseDown={mouseDown}
           onMouseUp={mouseUp}
         >
-          <ImageWrapper draggable={false} src={imgUrl} />
+          <ImageWrapper>
+            <Image src={imgUrl} alt="프로젝트 페이지 썸네일" />
+            <InsetShadow />
+          </ImageWrapper>
         </FilmElement>
         {isFocusing && <Dim onClick={() => onDimClick?.()} />}
       </Container>
