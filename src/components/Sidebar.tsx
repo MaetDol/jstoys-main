@@ -15,6 +15,7 @@ const SidebarElement = styled.aside<{ visible: boolean }>`
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.25);
   padding: 56px 32px;
   box-sizing: border-box;
+  white-space: pre-line;
 
   transition: transform 0.2s, opacity 0.4s;
   opacity: 0;
