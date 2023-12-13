@@ -99,6 +99,10 @@ export const FilmPhysics: React.FC = () => {
     };
   }, [focusedId]);
 
+  const targetFilmContent = filmes.current.find(
+    (film) => film.id === focusedId
+  )?.content;
+
   return (
     <>
       <ZIndexContainer>
@@ -145,7 +149,12 @@ export const FilmPhysics: React.FC = () => {
           />
         ))}
       </ZIndexContainer>
-      <Sidebar visible={focusedId !== null} />
+      <Sidebar
+        visible={focusedId !== null}
+        demoUrl={targetFilmContent?.demoUrl}
+        description={targetFilmContent?.description}
+        title={targetFilmContent?.title}
+      />
     </>
   );
 };
