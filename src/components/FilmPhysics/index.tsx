@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
 import { useEffect, useRef, useState } from 'react';
-import { Film } from './Film';
-import { Sidebar } from './Sidebar';
+import { Film } from '../Film';
+import { Sidebar } from '../Sidebar';
+import { FILM_CONTENTS, FilmContent } from './content';
 
 type FilmRef = {
   id: number;
@@ -10,6 +11,8 @@ type FilmRef = {
   acceleration: Position;
   zIndex: number;
   isDragging: boolean;
+
+  content: FilmContent;
 };
 
 type Position = {
@@ -27,25 +30,24 @@ const ZIndexContainer = styled.div`
 `;
 
 export const FilmPhysics: React.FC = () => {
-  const zIndex = useRef(1);
-  const filmes = useRef<FilmRef[]>([
-    {
+  const zIndex = useRef(0);
+  const filmes = useRef<FilmRef[]>([]);
+  const [, setReady] = useState(false);
+  useEffect(() => {
+    filmes.current = FILM_CONTENTS.map((film) => ({
       id: 0,
       elem: null,
-      position: { x: 0, y: 0 },
+      position: {
+        x: window.innerWidth / 2 - Math.random() * 424,
+        y: window.innerHeight / 2 - Math.random() * 356,
+      },
       acceleration: { x: 0, y: 0 },
-      zIndex: 0,
+      zIndex: ++zIndex.current,
       isDragging: false,
-    },
-    {
-      id: 1,
-      elem: null,
-      position: { x: 0, y: 0 },
-      acceleration: { x: 0, y: 0 },
-      zIndex: 1,
-      isDragging: false,
-    },
-  ]);
+      content: film,
+    }));
+    setReady(true);
+  }, []);
 
   const [focusedId, setFocusedId] = useState<number | null>(null);
 
