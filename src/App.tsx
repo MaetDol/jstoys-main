@@ -76,6 +76,28 @@ const Vignetting = styled.div`
   }
 `;
 
+export enum Device {
+  MOBILE = 'mobile',
+  DESKTOP = 'desktop',
+}
+const getDeviceType = (): Device => {
+  return window.innerWidth <= 480 ? Device.MOBILE : Device.DESKTOP;
+};
+
+export function useDeviceSize() {
+  const [device, setDevice] = useState<Device>(getDeviceType);
+  useEffect(() => {
+    const handler = () => {
+      setDevice(getDeviceType());
+    };
+
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  return device;
+}
+
 function App() {
   // Vignetting 컴포넌트 분리시 같이 가져갈 것.
   // 커스텀 훅으로 분리
@@ -110,7 +132,7 @@ function App() {
           top: `${windowCenter[1]}px`,
         }}
       />
-      <FilmPhysics></FilmPhysics>
+      <FilmPhysics />
       <GithubLink
         title="JSToys-main 레포지토리 새창에서 열기"
         href="https://github.com/MaetDol/jstoys-main"

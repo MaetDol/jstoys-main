@@ -8,17 +8,8 @@ import {
   useRef,
   useState,
 } from 'react';
-
-const Dim = styled.div`
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
-`;
+import { Device, useDeviceSize } from '../App';
+import { Dim } from './Dim';
 
 const Container = styled.div`
   position: absolute;
@@ -26,9 +17,23 @@ const Container = styled.div`
   top: 0;
 `;
 
-const FilmElement = styled.div<{ isDragging: boolean; isFocusing: boolean }>`
-  width: 424px;
-  height: 356px;
+const FilmElement = styled.div<{
+  isDragging: boolean;
+  isFocusing: boolean;
+  isMobile: boolean;
+}>`
+  ${(props) =>
+    props.isMobile
+      ? css`
+          --width: 296px;
+          --height: 249px;
+        `
+      : css`
+          --width: 424px;
+          --height: 356px;
+        `}
+  width: var(--width);
+  height: var(--height);
   background: white;
   box-shadow: 0 0 12px 4px rgba(0, 0, 0, 8%);
   padding: 28px 68px 28px 28px;
@@ -42,8 +47,10 @@ const FilmElement = styled.div<{ isDragging: boolean; isFocusing: boolean }>`
   ${(props) => {
     if (props.isFocusing) {
       return css`
-        left: calc(50vw - 212px) !important;
-        top: calc(50vh - 178px) !important;
+        left: calc(50vw - var(--width) / 2) !important;
+        top: ${props.isMobile
+          ? `48px`
+          : `calc(50vh - var(--height) / 2)`} !important;
         box-shadow: 0 0 24px 8px rgba(0, 0, 0, 20%);
       `;
     } else if (props.isDragging) {
@@ -133,32 +140,65 @@ export const Film = forwardRef<HTMLDivElement, Props>(
       onDragStart?.();
     };
 
+    const device = useDeviceSize();
     useEffect(() => {
-      const handler = (e: MouseEvent) => {
-        if (!isDragging.current) return;
-
+      const drag = (x: number, y: number) => {
         if (prev.current) {
-          const xDis = e.clientX - prev.current.x;
-          const yDis = e.clientY - prev.current.y;
+          const xDis = x - prev.current.x;
+          const yDis = y - prev.current.y;
           onDragging?.(xDis, yDis);
           prev.current.distance += Math.sqrt(Math.abs(xDis ** 2 + yDis ** 2));
         }
 
         prev.current = {
-          x: e.clientX,
-          y: e.clientY,
+          x: x,
+          y: y,
           distance: prev.current?.distance ?? 0,
         };
       };
 
-      window.addEventListener('mousemove', handler);
-      window.addEventListener('mouseup', mouseUp);
+      const mouseMoveHandler = (e: MouseEvent) => {
+        if (!isDragging.current) return;
+        drag(e.clientX, e.clientY);
+      };
+      const touchMoveHandler = (e: TouchEvent) => {
+        if (!isDragging.current) return;
+        drag(e.touches[0].clientX, e.touches[0].clientY);
+      };
+
+      if (device === Device.DESKTOP) {
+        window.addEventListener('mousemove', mouseMoveHandler);
+        window.addEventListener('mouseup', mouseUp);
+      }
+
+      if (device === Device.MOBILE) {
+        window.addEventListener('touchmove', touchMoveHandler);
+        window.addEventListener('touchend', mouseUp);
+      }
 
       return () => {
-        window.removeEventListener('mousemove', handler);
+        window.removeEventListener('mousemove', mouseMoveHandler);
         window.removeEventListener('mouseup', mouseUp);
+
+        window.removeEventListener('touchmove', touchMoveHandler);
+        window.removeEventListener('touchend', mouseUp);
       };
-    }, [mouseUp, onDragging]);
+    }, [mouseUp, onDragging, device]);
+
+    const mouseEvents: { [name: string]: Function | undefined } = {
+      onMouseDown: undefined,
+      onMouseUp: undefined,
+
+      onTouchStart: undefined,
+      onTouchEnd: undefined,
+    };
+    if (device === Device.DESKTOP) {
+      mouseEvents.onMouseDown = mouseDown;
+      mouseEvents.onMouseUp = mouseUp;
+    } else if (device === Device.MOBILE) {
+      mouseEvents.onTouchStart = mouseDown;
+      mouseEvents.onTouchEnd = mouseUp;
+    }
 
     return (
       <Container>
@@ -166,9 +206,9 @@ export const Film = forwardRef<HTMLDivElement, Props>(
           ref={divRef}
           isFocusing={isFocusing}
           isDragging={isDraggingState}
+          isMobile={device === Device.MOBILE}
           draggable={false}
-          onMouseDown={mouseDown}
-          onMouseUp={mouseUp}
+          {...mouseEvents}
         >
           <ImageWrapper>
             <Image src={imgUrl} alt="프로젝트 페이지 썸네일" />

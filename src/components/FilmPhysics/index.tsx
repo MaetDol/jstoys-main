@@ -1,8 +1,28 @@
 import styled from '@emotion/styled';
 import { useEffect, useRef, useState } from 'react';
+import { Device, useDeviceSize } from '../../App';
+import OUTER_LINK from '../../statics/outer-link.svg';
+import { BottomSheet } from '../BottomSheet';
 import { Film } from '../Film';
 import { Sidebar } from '../Sidebar';
 import { FILM_CONTENTS, FilmContent } from './content';
+
+const TitleLink = styled.a`
+  display: block;
+  color: #4587ea;
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: none;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const SidebarTextWrapper = styled.div`
+  box-sizing: border-box;
+  white-space: pre-line;
+`;
 
 type FilmRef = {
   id: string;
@@ -50,6 +70,8 @@ export const FilmPhysics: React.FC = () => {
   }, []);
 
   const [focusedId, setFocusedId] = useState<string | null>(null);
+
+  const device = useDeviceSize();
 
   useEffect(() => {
     let stopAnimating = false;
@@ -166,12 +188,38 @@ export const FilmPhysics: React.FC = () => {
           />
         ))}
       </ZIndexContainer>
-      <Sidebar
-        visible={focusedId !== null}
-        demoUrl={targetFilmContent?.demoUrl}
-        description={targetFilmContent?.description}
-        title={targetFilmContent?.title}
-      />
+
+      {device === Device.DESKTOP && (
+        <Sidebar visible={focusedId !== null}>
+          <SidebarTextWrapper>
+            <TitleLink
+              href={targetFilmContent?.demoUrl}
+              target="_blank"
+              title=""
+            >
+              {targetFilmContent?.title}
+              <img src={OUTER_LINK} alt="새창에서 열기 아이콘" />
+            </TitleLink>
+            {targetFilmContent?.description}
+          </SidebarTextWrapper>
+        </Sidebar>
+      )}
+
+      {device === Device.MOBILE && (
+        <BottomSheet visible={focusedId !== null}>
+          <SidebarTextWrapper>
+            <TitleLink
+              href={targetFilmContent?.demoUrl}
+              target="_blank"
+              title=""
+            >
+              {targetFilmContent?.title}
+              <img src={OUTER_LINK} alt="새창에서 열기 아이콘" />
+            </TitleLink>
+            {targetFilmContent?.description}
+          </SidebarTextWrapper>
+        </BottomSheet>
+      )}
     </>
   );
 };
