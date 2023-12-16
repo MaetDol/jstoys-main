@@ -6,14 +6,22 @@ import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
 
 const resetStyle = css`
+  html,
   body {
     margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
   }
 `;
 
 const AppContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   position: relative;
 `;
