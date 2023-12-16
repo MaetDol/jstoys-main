@@ -11,6 +11,8 @@ import {
 import { Device, useDeviceSize } from '../App';
 import { Dim } from './Dim';
 
+const POSITION_TRANSITION_SECONDS = 0.1;
+
 const Container = styled.div`
   position: absolute;
   left: 0;
@@ -21,6 +23,7 @@ const FilmElement = styled.div<{
   isDragging: boolean;
   isFocusing: boolean;
   isMobile: boolean;
+  isTransitOnPos: boolean;
 }>`
   ${(props) =>
     props.isMobile
@@ -42,7 +45,10 @@ const FilmElement = styled.div<{
   cursor: grab;
   z-index: 1;
 
-  transition: transform ease-in-out 0.1s, left 0.1s, top 0.1s;
+  transition: transform ease-in-out 0.1s
+    ${(props) =>
+      props.isTransitOnPos &&
+      `, left ${POSITION_TRANSITION_SECONDS}s, top ${POSITION_TRANSITION_SECONDS}s`};
 
   ${(props) => {
     if (props.isFocusing) {
@@ -200,10 +206,23 @@ export const Film = forwardRef<HTMLDivElement, Props>(
       mouseEvents.onTouchEnd = mouseUp;
     }
 
+    const [isTransitOnPos, setIsTransitOnPos] = useState(false);
+    useEffect(() => {
+      setIsTransitOnPos(true);
+      if (isFocusing) return;
+
+      const id = setTimeout(
+        () => setIsTransitOnPos(false),
+        POSITION_TRANSITION_SECONDS * 1000
+      );
+      return () => clearTimeout(id);
+    }, [isFocusing]);
+
     return (
       <Container>
         <FilmElement
           ref={divRef}
+          isTransitOnPos={isFocusing || isTransitOnPos}
           isFocusing={isFocusing}
           isDragging={isDraggingState}
           isMobile={device === Device.MOBILE}
