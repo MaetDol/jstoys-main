@@ -2,13 +2,13 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from 'react';
 import { Device, useDeviceSize } from '../App';
+import { useDragHandler } from '../hooks';
 import { Dim } from './Dim';
 
 const POSITION_TRANSITION_SECONDS = 0.1;
@@ -118,93 +118,13 @@ export const Film = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
-    const prev = useRef<{ x: number; y: number; distance: number } | null>(
-      null
-    );
-    const isDragging = useRef(false);
-    const [isDraggingState, setIsDragging] = useState(false);
-
     const divRef = useRef<HTMLDivElement>(null);
     useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(
       ref,
       () => divRef.current
     );
 
-    const mouseUp = useCallback(() => {
-      const hasMovedShortly =
-        isDragging.current && (prev.current?.distance ?? 0) < 10;
-      if (hasMovedShortly) onClick?.();
-
-      prev.current = null;
-      isDragging.current = false;
-      setIsDragging(false);
-      onDragStop?.();
-    }, [onClick, onDragStop]);
-    const mouseDown = () => {
-      isDragging.current = true;
-      setIsDragging(true);
-      onDragStart?.();
-    };
-
     const device = useDeviceSize();
-    useEffect(() => {
-      const drag = (x: number, y: number) => {
-        if (prev.current) {
-          const xDis = x - prev.current.x;
-          const yDis = y - prev.current.y;
-          onDragging?.(xDis, yDis);
-          prev.current.distance += Math.sqrt(Math.abs(xDis ** 2 + yDis ** 2));
-        }
-
-        prev.current = {
-          x: x,
-          y: y,
-          distance: prev.current?.distance ?? 0,
-        };
-      };
-
-      const mouseMoveHandler = (e: MouseEvent) => {
-        if (!isDragging.current) return;
-        drag(e.clientX, e.clientY);
-      };
-      const touchMoveHandler = (e: TouchEvent) => {
-        if (!isDragging.current) return;
-        drag(e.touches[0].clientX, e.touches[0].clientY);
-      };
-
-      if (device === Device.DESKTOP) {
-        window.addEventListener('mousemove', mouseMoveHandler);
-        window.addEventListener('mouseup', mouseUp);
-      }
-
-      if (device === Device.MOBILE) {
-        window.addEventListener('touchmove', touchMoveHandler);
-        window.addEventListener('touchend', mouseUp);
-      }
-
-      return () => {
-        window.removeEventListener('mousemove', mouseMoveHandler);
-        window.removeEventListener('mouseup', mouseUp);
-
-        window.removeEventListener('touchmove', touchMoveHandler);
-        window.removeEventListener('touchend', mouseUp);
-      };
-    }, [mouseUp, onDragging, device]);
-
-    const mouseEvents: { [name: string]: Function | undefined } = {
-      onMouseDown: undefined,
-      onMouseUp: undefined,
-
-      onTouchStart: undefined,
-      onTouchEnd: undefined,
-    };
-    if (device === Device.DESKTOP) {
-      mouseEvents.onMouseDown = mouseDown;
-      mouseEvents.onMouseUp = mouseUp;
-    } else if (device === Device.MOBILE) {
-      mouseEvents.onTouchStart = mouseDown;
-      mouseEvents.onTouchEnd = mouseUp;
-    }
 
     const [isTransitOnPos, setIsTransitOnPos] = useState(false);
     useEffect(() => {
@@ -218,16 +138,23 @@ export const Film = forwardRef<HTMLDivElement, Props>(
       return () => clearTimeout(id);
     }, [isFocusing]);
 
+    const { isDragging, dragHandlers } = useDragHandler({
+      onClick,
+      onDragStart,
+      onDragStop,
+      onDragging,
+    });
+
     return (
       <Container>
         <FilmElement
           ref={divRef}
           isTransitOnPos={isFocusing || isTransitOnPos}
           isFocusing={isFocusing}
-          isDragging={isDraggingState}
+          isDragging={isDragging}
           isMobile={device === Device.MOBILE}
           draggable={false}
-          {...mouseEvents}
+          {...dragHandlers}
         >
           <ImageWrapper>
             <Image src={imgUrl} alt="프로젝트 페이지 썸네일" />

@@ -8,12 +8,28 @@ type HandlerProps = {
   onDragStop?: () => void;
 };
 
+type DragHandlerSet =
+  | {
+      onMouseDown: (e: React.MouseEvent) => void;
+      onMouseUp: (e: React.MouseEvent) => void;
+    }
+  | {
+      onTouchStart: (e: React.TouchEvent) => void;
+      onTouchEnd: (e: React.TouchEvent) => void;
+    }
+  | {};
+
+type UseDragReturns = {
+  isDragging: boolean;
+  dragHandlers: DragHandlerSet;
+};
+
 export const useDragHandler = ({
   onClick,
   onDragging,
   onDragStart,
   onDragStop,
-}: HandlerProps) => {
+}: HandlerProps): UseDragReturns => {
   const prev = useRef<{ x: number; y: number; distance: number } | null>(null);
   // 리액트 상태와 별개로 이벤트 핸들러에서 사용하기 위한 ref
   const isDraggingRef = useRef(false);
@@ -31,12 +47,6 @@ export const useDragHandler = ({
     setIsDragging(false);
     onDragStop?.();
   }, [onClick, onDragStop]);
-
-  const mouseDown = () => {
-    isDraggingRef.current = true;
-    setIsDragging(true);
-    onDragStart?.();
-  };
 
   const device = useDeviceSize();
   useEffect(() => {
@@ -83,23 +93,21 @@ export const useDragHandler = ({
     };
   }, [mouseUp, onDragging, device]);
 
-  const mouseHandlers: { [name: string]: Function | undefined } = {
-    onMouseDown: undefined,
-    onMouseUp: undefined,
-
-    onTouchStart: undefined,
-    onTouchEnd: undefined,
+  const mouseDown = () => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    onDragStart?.();
   };
+
+  let dragHandlers: DragHandlerSet = {};
   if (device === Device.DESKTOP) {
-    mouseHandlers.onMouseDown = mouseDown;
-    mouseHandlers.onMouseUp = mouseUp;
+    dragHandlers = { onMouseDown: mouseDown, onMouseUp: mouseUp };
   } else if (device === Device.MOBILE) {
-    mouseHandlers.onTouchStart = mouseDown;
-    mouseHandlers.onTouchEnd = mouseUp;
+    dragHandlers = { onTouchStart: mouseDown, onTouchEnd: mouseUp };
   }
 
   return {
     isDragging,
-    mouseHandlers,
+    dragHandlers,
   };
 };
