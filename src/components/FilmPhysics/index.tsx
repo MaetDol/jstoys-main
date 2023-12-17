@@ -206,7 +206,10 @@ export const FilmPhysics: React.FC = () => {
       )}
 
       {device === Device.MOBILE && (
-        <BottomSheet visible={focusedId !== null}>
+        <BottomSheet
+          visible={focusedId !== null}
+          onClose={() => setFocusedId(null)}
+        >
           <SidebarTextWrapper>
             <TitleLink
               href={targetFilmContent?.demoUrl}

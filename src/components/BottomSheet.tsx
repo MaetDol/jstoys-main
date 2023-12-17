@@ -1,7 +1,13 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { useState } from 'react';
+import { useDragHandler } from '../hooks';
 
-const Container = styled.div<{ visible: boolean }>`
+const Container = styled.div<{
+  visible: boolean;
+  isDragging: boolean;
+  dragDown: number;
+}>`
   position: absolute;
   z-index: 10;
   width: 100%;
@@ -14,8 +20,13 @@ const Container = styled.div<{ visible: boolean }>`
   box-sizing: border-box;
   padding: 0 32px;
 
-  transition: transform 0.3s;
-  transform: translateY(0);
+  ${(props) =>
+    !props.isDragging &&
+    css`
+      transition: transform 0.3s;
+    `}
+
+  transform: translateY(${(props) => props.dragDown}px);
   ${(props) =>
     !props.visible &&
     css`
@@ -39,12 +50,30 @@ const CloseContainer = styled.div`
 
 type Props = React.PropsWithChildren<{
   visible: boolean;
+  onClose?: () => void;
 }>;
 
-export const BottomSheet: React.FC<Props> = ({ visible, children }) => {
+export const BottomSheet: React.FC<Props> = ({
+  visible,
+  children,
+  onClose,
+}) => {
+  const [dragDown, setDragDown] = useState(0);
+
+  const { isDragging, dragHandlers } = useDragHandler({
+    onDragging: (x, y) => setDragDown((prev) => Math.max(0, prev + y)),
+    onClick: onClose,
+    onDragStop: () => {
+      if (dragDown > 160) {
+        onClose?.();
+      }
+      setDragDown(0);
+    },
+  });
+
   return (
-    <Container visible={visible}>
-      <CloseContainer />
+    <Container visible={visible} isDragging={isDragging} dragDown={dragDown}>
+      <CloseContainer {...dragHandlers} />
       {children}
     </Container>
   );
