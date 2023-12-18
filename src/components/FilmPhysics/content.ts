@@ -17,22 +17,28 @@ export const FILM_CONTENTS: FilmContent[] = [
     demoUrl: './',
     imgUrl: DESK_ATELIER,
     title: 'Desk Atelier',
-    description: `관심가는 아이디어들을 프론트엔드스럽게 풀어낸 프로젝트들을 쉽게 접근하기 위해, 
-    작업물들을 늘어놓은 전시장(Atelier)이자 작업장(Desk)이에요.`,
+    description: `프론트엔드로서 풀어낸 토이 프로젝트들을 저만의 방식으로 표현한 전시장(Atelier)이자, 작업장(Desk)이에요.
+
+    지금 보고 계신 이 페이지! 여기가 맞습니다~`,
   },
   {
     demoUrl: 'https://maetdol.github.io/JSToys/water-wave/',
     imgUrl: WATER_WAVE,
     title: 'Water wave',
-    description: `연속적인 물결을 여러 레이어로 겹쳐 표현한 프로젝트! 
-      다른 오브젝트들을 배치하고, 마우스로 상호작용 가능하게 만듬으로써
-      프로젝트에 몰입할 수 있게 만들었어요.`,
+    description: `연속적인 물결을 여러 레이어로 겹쳐 표현한 프로젝트! 물결이 찰랑찰랑~
+
+      여러 오브젝트들을 배치해 마우스로 상호작용 가능하게 만듬으로써,
+      프로젝트를 체험하고 몰입할 수 있게 만들었어요.`,
   },
   {
     demoUrl: 'https://maetdol.github.io/JSToys/make-to-pixel/',
     imgUrl: MAKE_TO_PIXEL,
     title: 'Make to pixel',
-    description: '이미지를 픽셀아트처럼 만들어줘요',
+    description: `이미지를 픽셀아트처럼 네모네모나게, 둥글둥글하게 만들어줘요!
+
+    이미지 raw 데이터를 활용해 도트로 재생성해주는 프로젝트에요.
+    각 도트 색상을 구할때 k-means 알고리즘을 사용해서, 멱등성이 보장되지 않아요.
+    `,
   },
   {
     demoUrl: 'https://maetdol.github.io/JSToys/3d-dice/',
