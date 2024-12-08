@@ -4,6 +4,8 @@ import { processEnvService } from '../services/ProcessEnv';
 
 export const GoogleAnalytics4 = React.memo(() => {
   useEffect(() => {
+    // 테스트 하고자 한다면,
+    // 아래 라인을 주석처리하세요.
     const isDebug = !processEnvService.isProducton();
     if (isDebug) {
       console.log('GA4 is Offline because of debug mode');
