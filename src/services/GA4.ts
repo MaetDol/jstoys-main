@@ -34,8 +34,13 @@ class GoogleAnalytics4 {
     });
   }
 
-  public event(action: string, event: Record<string, string>) {
-    this.send('event', action, event);
+  public event<T extends Object>(action: string, event: Record<string, T>) {
+    const stringifyEvent: Record<string, string> = {};
+    for (const key in event) {
+      stringifyEvent[key] = event[key].toString();
+    }
+
+    this.send('event', action, stringifyEvent);
   }
 }
 
