@@ -8,7 +8,7 @@ class GoogleAnalytics4 {
   private send(
     type: GtagCommands,
     action: string,
-    event: Record<string, string>
+    event?: Record<string, string>
   ) {
     if (!('gtag' in window)) {
       throw new Error('Seems like Google Analytics 4 is not loaded.');
@@ -25,6 +25,13 @@ class GoogleAnalytics4 {
     }
 
     window.gtag(type, action, event);
+  }
+
+  public init() {
+    this.send('js', new Date().toString());
+    this.send('config', 'G-DT9Y6614LF', {
+      debug_mode: this.debugMode.toString(),
+    });
   }
 
   public event(action: string, event: Record<string, string>) {
