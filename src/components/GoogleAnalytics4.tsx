@@ -23,21 +23,13 @@ export const GoogleAnalytics4 = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.async = true;
-    script.innerHTML = `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-    `;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      ga4Service.init();
+    const extendedWindow = window as any;
+    extendedWindow.dataLayer = extendedWindow.dataLayer || [];
+    extendedWindow.gtag = function gtag() {
+      extendedWindow.dataLayer.push(arguments);
     };
 
-    return () => {
-      document.body.removeChild(script);
-    };
+    ga4Service.init();
   }, []);
 
   return null;
