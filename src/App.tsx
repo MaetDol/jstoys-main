@@ -2,6 +2,7 @@ import { Global, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { FilmPhysics } from './components/FilmPhysics';
+import { GoogleAnalytics4 } from './components/GoogleAnalytics4';
 import GITHUB_ICON from './statics/github.svg';
 import LEATHER_TEXTURE from './statics/leather_texture.jpg';
 
@@ -132,6 +133,7 @@ function App() {
 
   return (
     <AppContainer>
+      <GoogleAnalytics4 />
       <Global styles={resetStyle} />
       <Background />
       <Vignetting
