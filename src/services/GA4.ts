@@ -4,6 +4,7 @@ type GtagCommands = Parameters<Gtag.Gtag>[0];
 
 class GoogleAnalytics4 {
   private readonly debugMode = !processEnvService.isProducton();
+  private isInit = false;
 
   private send(
     type: GtagCommands,
@@ -18,19 +19,27 @@ class GoogleAnalytics4 {
     }
 
     if (this.debugMode) {
-      console.group(`[${type}]: ${action}`);
+      console.groupCollapsed(`[Gtag] - (${type}) ${action}`);
       console.log(event);
       console.groupEnd();
-      return;
     }
 
-    window.gtag(type, action, event);
+    if (event) {
+      window.gtag(type, action, event);
+    } else {
+      window.gtag(type, action);
+    }
   }
 
   public init() {
-    this.send('js', new Date().toString());
+    if (this.isInit) return;
+    this.isInit = true;
+
+    // @ts-ignore
+    this.send('js', new Date());
     this.send('config', 'G-DT9Y6614LF', {
-      debug_mode: this.debugMode.toString(),
+      // @ts-ignore
+      debug_mode: this.debugMode,
     });
   }
 
