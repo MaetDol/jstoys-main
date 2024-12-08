@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { useEffect, useRef, useState } from 'react';
 import { Device, useDeviceSize } from '../../App';
+import { ga4Service } from '../../services/GA4';
 import OUTER_LINK from '../../statics/outer-link.svg';
 import { BottomSheet } from '../BottomSheet';
 import { Film } from '../Film';
@@ -142,6 +143,13 @@ export const FilmPhysics: React.FC = () => {
     (film) => film.id === focusedId
   )?.content;
 
+  const openEvent = (title: string, platform: 'mobile' | 'desktop') => {
+    ga4Service.event('필름사진 새탭에서 열기', {
+      name: title,
+      platform,
+    });
+  };
+
   return (
     <>
       <ZIndexContainer>
@@ -172,6 +180,10 @@ export const FilmPhysics: React.FC = () => {
               film.isDragging = true;
               film.acceleration.x = 0;
               film.acceleration.y = 0;
+
+              ga4Service.event('필름사진 드래그 시작', {
+                name: film.content.title,
+              });
             }}
             onDragStop={() => (film.isDragging = false)}
             onDragging={(x, y) => {
@@ -183,6 +195,11 @@ export const FilmPhysics: React.FC = () => {
               film.acceleration.x = 0;
               film.acceleration.y = 0;
               setFocusedId((id) => (id === film.id ? null : film.id));
+
+              ga4Service.event('필름사진 클릭', {
+                name: film.content.title,
+                isOpened: film.id === focusedId,
+              });
             }}
             onDimClick={() => setFocusedId(null)}
           />
@@ -196,6 +213,9 @@ export const FilmPhysics: React.FC = () => {
               href={targetFilmContent?.demoUrl}
               target="_blank"
               title=""
+              onClick={() =>
+                openEvent(targetFilmContent?.title ?? 'unknown', 'desktop')
+              }
             >
               {targetFilmContent?.title}
               <img src={OUTER_LINK} alt="새창에서 열기 아이콘" />
@@ -215,6 +235,9 @@ export const FilmPhysics: React.FC = () => {
               href={targetFilmContent?.demoUrl}
               target="_blank"
               title=""
+              onClick={() =>
+                openEvent(targetFilmContent?.title ?? 'unknown', 'mobile')
+              }
             >
               {targetFilmContent?.title}
               <img src={OUTER_LINK} alt="새창에서 열기 아이콘" />
