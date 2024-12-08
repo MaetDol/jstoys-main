@@ -2,11 +2,6 @@ import React, { useEffect } from 'react';
 import { processEnvService } from '../services/ProcessEnv';
 
 export const GoogleAnalytics4 = React.memo(() => {
-  const isDebug = !processEnvService.isProducton();
-  if (isDebug) {
-    console.log('GA4 Running on DEBUG mode.');
-  }
-
   useEffect(() => {
     const script = document.createElement('script');
     script.async = true;
@@ -19,6 +14,11 @@ export const GoogleAnalytics4 = React.memo(() => {
   }, []);
 
   useEffect(() => {
+    const isDebug = !processEnvService.isProducton();
+    if (isDebug) {
+      console.log('GA4 Running on DEBUG mode.');
+    }
+
     const script = document.createElement('script');
     script.async = true;
     script.innerHTML = `
