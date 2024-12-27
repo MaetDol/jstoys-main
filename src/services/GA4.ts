@@ -34,7 +34,9 @@ class GoogleAnalytics4 {
   public init() {
     if (this.isInit) return;
     this.isInit = true;
-
+    
+    // string 타입을 받는다곤 하나, toString 으로 보내면 아예 초기화가 되지 않는 듯 합니다.
+    // 때문에 타입에러를 무시하기 위해 다음 라인을 추가했어요.
     // @ts-ignore
     this.send('js', new Date());
     this.send('config', 'G-DT9Y6614LF', {
