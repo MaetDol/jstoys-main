@@ -39,7 +39,7 @@ export const useDragHandler = ({
       if (prev.current) {
         const xDis = x - prev.current.x;
         const yDis = y - prev.current.y;
-        onDragging?.(xDis, yDis);
+        onRef.current.onDragging?.(xDis, yDis);
         prev.current.distance += Math.sqrt(Math.abs(xDis ** 2 + yDis ** 2));
       }
 
