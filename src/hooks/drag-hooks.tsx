@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 type HandlerProps = {
   onClick?: (Params: { x: number; y: number }) => void;
