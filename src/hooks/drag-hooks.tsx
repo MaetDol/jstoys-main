@@ -26,24 +26,11 @@ export const useDragHandler = ({
   const prev = useRef<{ x: number; y: number; distance: number } | null>(null);
   // 리액트 상태와 별개로 이벤트 핸들러에서 사용하기 위한 ref
   const isDraggingRef = useRef(false);
+  const onRef = useRef({ onClick, onDragging, onDragStart, onDragStop });
+  onRef.current = { onClick, onDragging, onDragStart, onDragStop };
 
   // 리렌더링을 위한 상태
   const [isDragging, setIsDragging] = useState(false);
-
-  const mouseUp = ({ x, y }: { x: number; y: number }) => {
-    const hasMovedShortly =
-      isDraggingRef.current && (prev.current?.distance ?? 0) < 10;
-
-    prev.current = null;
-    isDraggingRef.current = false;
-    setIsDragging(false);
-
-    if (hasMovedShortly) {
-      onClick?.({ x, y });
-      return;
-    }
-    onDragStop?.();
-  };
 
   useEffect(() => {
     if (!isDragging) return;
@@ -70,6 +57,21 @@ export const useDragHandler = ({
     const touchMoveHandler = (e: TouchEvent) => {
       if (!isDraggingRef.current) return;
       drag(e.touches[0].clientX, e.touches[0].clientY);
+    };
+
+    const mouseUp = ({ x, y }: { x: number; y: number }) => {
+      const hasMovedShortly =
+        isDraggingRef.current && (prev.current?.distance ?? 0) < 10;
+
+      prev.current = null;
+      isDraggingRef.current = false;
+      setIsDragging(false);
+
+      if (hasMovedShortly) {
+        onRef.current.onClick?.({ x, y });
+        return;
+      }
+      onRef.current.onDragStop?.();
     };
 
     const nativeMouseUp = (e: MouseEvent) => {
