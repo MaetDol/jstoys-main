@@ -1,23 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Device, useDeviceSize } from '../App';
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type HandlerProps = {
-  onClick?: () => void;
+  onClick?: (Params: { x: number; y: number }) => void;
   onDragging?: (xMove: number, yMove: number) => void;
   onDragStart?: () => void;
   onDragStop?: () => void;
 };
 
-type DragHandlerSet =
-  | {
-      onMouseDown: (e: React.MouseEvent) => void;
-      onMouseUp: (e: React.MouseEvent) => void;
-    }
-  | {
-      onTouchStart: (e: React.TouchEvent) => void;
-      onTouchEnd: (e: React.TouchEvent) => void;
-    }
-  | {};
+type DragHandlerSet = {
+  onMouseDown: (e: React.MouseEvent) => void;
+  onTouchStart: (e: React.TouchEvent) => void;
+};
 
 type UseDragReturns = {
   isDragging: boolean;
@@ -37,19 +30,24 @@ export const useDragHandler = ({
   // 리렌더링을 위한 상태
   const [isDragging, setIsDragging] = useState(false);
 
-  const mouseUp = useCallback(() => {
+  const mouseUp = ({ x, y }: { x: number; y: number }) => {
     const hasMovedShortly =
       isDraggingRef.current && (prev.current?.distance ?? 0) < 10;
-    if (hasMovedShortly) onClick?.();
 
     prev.current = null;
     isDraggingRef.current = false;
     setIsDragging(false);
-    onDragStop?.();
-  }, [onClick, onDragStop]);
 
-  const device = useDeviceSize();
+    if (hasMovedShortly) {
+      onClick?.({ x, y });
+      return;
+    }
+    onDragStop?.();
+  };
+
   useEffect(() => {
+    if (!isDragging) return;
+
     const drag = (x: number, y: number) => {
       if (prev.current) {
         const xDis = x - prev.current.x;
@@ -74,24 +72,30 @@ export const useDragHandler = ({
       drag(e.touches[0].clientX, e.touches[0].clientY);
     };
 
-    if (device === Device.DESKTOP) {
-      window.addEventListener('mousemove', mouseMoveHandler);
-      window.addEventListener('mouseup', mouseUp);
-    }
+    const nativeMouseUp = (e: MouseEvent) => {
+      mouseUp({ x: e.clientX, y: e.clientY });
+    };
+    const nativeTouchEnd = (e: TouchEvent) => {
+      mouseUp({
+        x: e.changedTouches[0].clientX,
+        y: e.changedTouches[0].clientY,
+      });
+    };
 
-    if (device === Device.MOBILE) {
-      window.addEventListener('touchmove', touchMoveHandler);
-      window.addEventListener('touchend', mouseUp);
-    }
+    window.addEventListener("mousemove", mouseMoveHandler);
+    window.addEventListener("mouseup", nativeMouseUp);
+
+    window.addEventListener("touchmove", touchMoveHandler);
+    window.addEventListener("touchend", nativeTouchEnd);
 
     return () => {
-      window.removeEventListener('mousemove', mouseMoveHandler);
-      window.removeEventListener('mouseup', mouseUp);
+      window.removeEventListener("mousemove", mouseMoveHandler);
+      window.removeEventListener("mouseup", nativeMouseUp);
 
-      window.removeEventListener('touchmove', touchMoveHandler);
-      window.removeEventListener('touchend', mouseUp);
+      window.removeEventListener("touchmove", touchMoveHandler);
+      window.removeEventListener("touchend", nativeTouchEnd);
     };
-  }, [mouseUp, onDragging, device]);
+  }, [isDragging]);
 
   const mouseDown = () => {
     isDraggingRef.current = true;
@@ -99,12 +103,10 @@ export const useDragHandler = ({
     onDragStart?.();
   };
 
-  let dragHandlers: DragHandlerSet = {};
-  if (device === Device.DESKTOP) {
-    dragHandlers = { onMouseDown: mouseDown, onMouseUp: mouseUp };
-  } else if (device === Device.MOBILE) {
-    dragHandlers = { onTouchStart: mouseDown, onTouchEnd: mouseUp };
-  }
+  const dragHandlers: DragHandlerSet = {
+    onMouseDown: mouseDown,
+    onTouchStart: mouseDown,
+  };
 
   return {
     isDragging,
