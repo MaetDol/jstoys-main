@@ -18,18 +18,20 @@ const FilmElement = styled.div<{
   ${(props) =>
     props.isMobile
       ? css`
-          --width: 296px;
-          --height: 249px;
+          --width: 148px;
+          --height: 124px;
+          --padding: 14px;
         `
       : css`
           --width: 424px;
           --height: 356px;
+          --padding: 28px 68px 28px 28px;
         `}
   width: var(--width);
   height: var(--height);
   background: white;
   box-shadow: 0 0 12px 4px rgba(0, 0, 0, 8%);
-  padding: 28px 68px 28px 28px;
+  padding: var(--padding);
   box-sizing: border-box;
   position: absolute;
   cursor: grab;
