@@ -137,7 +137,7 @@ export const FilmPhysics: React.FC = () => {
     return () => {
       stopAnimating = true;
     };
-  }, [focusedId]);
+  }, [focusedId, device]);
 
   const targetFilmContent = filmes.current.find(
     (film) => film.id === focusedId,
