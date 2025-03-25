@@ -103,7 +103,7 @@ export const FilmPhysics: React.FC = () => {
             if (film2.zIndex < film1.zIndex) {
               const rect2 = film2.elem.getBoundingClientRect();
               if (hasRectConflict(rect1, rect2)) {
-                accumulateAccel(film1, rect1, rect2);
+                accumulateAccel(film1, rect1, rect2, device === Device.DESKTOP);
               }
             }
 
@@ -140,7 +140,7 @@ export const FilmPhysics: React.FC = () => {
   }, [focusedId]);
 
   const targetFilmContent = filmes.current.find(
-    (film) => film.id === focusedId
+    (film) => film.id === focusedId,
   )?.content;
 
   const openEvent = (title: string, platform: 'mobile' | 'desktop') => {
@@ -172,7 +172,13 @@ export const FilmPhysics: React.FC = () => {
 
                 film2.acceleration.x = 0;
                 film2.acceleration.y = 0;
-                accumulateAccel(film2, rect2, rect1, 0);
+                accumulateAccel(
+                  film2,
+                  rect2,
+                  rect1,
+                  device === Device.DESKTOP,
+                  0.1,
+                );
                 film2.acceleration.x *= 60;
                 film2.acceleration.y *= 60;
               });
@@ -254,7 +260,8 @@ function accumulateAccel(
   film: FilmRef,
   rect1: DOMRect,
   rect2: DOMRect,
-  throttle = 0.04
+  isDesktop: boolean,
+  throttle = 0.15,
 ) {
   const rect1Center = {
     x: rect1.x + rect1.width / 2,
@@ -274,11 +281,14 @@ function accumulateAccel(
   const xOverlap = targetXDistance - Math.abs(xDis);
   const yOverlap = targetYDistance - Math.abs(yDis);
 
-  const w = xOverlap * yOverlap * 0.000001;
+  let w = xOverlap * yOverlap;
+  w = isDesktop ? w / (4 * 4) : w;
+  w = Math.log10(w) * 0.04;
+
   if (w > throttle) {
     const slope = Math.max(
       0.2,
-      Math.min(2, Math.abs((rect2.y - rect1.y) / (rect2.x - rect1.x)))
+      Math.min(2, Math.abs((rect2.y - rect1.y) / (rect2.x - rect1.x))),
     );
     let targetY = slope * w;
     let targetX = w / slope;
@@ -308,7 +318,7 @@ function hasRectConflict(f1: DOMRect, f2: DOMRect) {
 
 function isPointInsideOfRect(
   f1: { x: number; y: number },
-  f2: { x: number; y: number; width: number; height: number }
+  f2: { x: number; y: number; width: number; height: number },
 ) {
   if (f1.x >= f2.x && f1.x <= f2.x + f2.width) {
     if (f1.y >= f2.y && f1.y <= f2.y + f2.height) {
