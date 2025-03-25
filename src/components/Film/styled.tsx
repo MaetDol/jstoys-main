@@ -1,5 +1,5 @@
-import { css } from '@emotion/react';
-import styled from '@emotion/styled';
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 
 export const POSITION_TRANSITION_SECONDS = 0.1;
 
@@ -34,6 +34,7 @@ const FilmElement = styled.div<{
   position: absolute;
   cursor: grab;
   z-index: 1;
+  touch-action: none;
 
   transition: transform ease-in-out 0.1s
     ${(props) =>

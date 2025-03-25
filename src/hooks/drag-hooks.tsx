@@ -8,8 +8,7 @@ type HandlerProps = {
 };
 
 type DragHandlerSet = {
-  onMouseDown: (e: React.MouseEvent) => void;
-  onTouchStart: (e: React.TouchEvent) => void;
+  onPointerDown: () => void;
 };
 
 type UseDragReturns = {
@@ -54,10 +53,6 @@ export const useDragHandler = ({
       if (!isDraggingRef.current) return;
       drag(e.clientX, e.clientY);
     };
-    const touchMoveHandler = (e: TouchEvent) => {
-      if (!isDraggingRef.current) return;
-      drag(e.touches[0].clientX, e.touches[0].clientY);
-    };
 
     const mouseUp = ({ x, y }: { x: number; y: number }) => {
       const hasMovedShortly =
@@ -77,25 +72,12 @@ export const useDragHandler = ({
     const nativeMouseUp = (e: MouseEvent) => {
       mouseUp({ x: e.clientX, y: e.clientY });
     };
-    const nativeTouchEnd = (e: TouchEvent) => {
-      mouseUp({
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY,
-      });
-    };
 
-    window.addEventListener("mousemove", mouseMoveHandler);
-    window.addEventListener("mouseup", nativeMouseUp);
-
-    window.addEventListener("touchmove", touchMoveHandler);
-    window.addEventListener("touchend", nativeTouchEnd);
-
+    window.addEventListener("pointermove", mouseMoveHandler);
+    window.addEventListener("pointerup", nativeMouseUp);
     return () => {
-      window.removeEventListener("mousemove", mouseMoveHandler);
-      window.removeEventListener("mouseup", nativeMouseUp);
-
-      window.removeEventListener("touchmove", touchMoveHandler);
-      window.removeEventListener("touchend", nativeTouchEnd);
+      window.removeEventListener("pointermove", mouseMoveHandler);
+      window.removeEventListener("pointerup", nativeMouseUp);
     };
   }, [isDragging]);
 
@@ -106,8 +88,7 @@ export const useDragHandler = ({
   };
 
   const dragHandlers: DragHandlerSet = {
-    onMouseDown: mouseDown,
-    onTouchStart: mouseDown,
+    onPointerDown: mouseDown,
   };
 
   return {
